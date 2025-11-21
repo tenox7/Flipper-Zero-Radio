@@ -43,27 +43,56 @@ static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
 #endif
     RadioScannerApp* app = (RadioScannerApp*)context;
     canvas_clear(canvas);
-    canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, 64, 2, AlignCenter, AlignTop, "Radio");
+
+    canvas_draw_frame(canvas, 0, 0, 128, 26);
+    canvas_draw_line(canvas, 1, 1, 126, 1);
+    canvas_draw_line(canvas, 1, 1, 1, 24);
+
+    canvas_set_font(canvas, FontBigNumbers);
+    char freq_str[RADIO_SCANNER_BUFFER_SZ + 1] = {0};
+    snprintf(freq_str, RADIO_SCANNER_BUFFER_SZ, "%.2f", (double)app->frequency / 1000000);
+    uint8_t freq_width = canvas_string_width(canvas, freq_str);
+    canvas_draw_str(canvas, 64 - freq_width / 2, 18, freq_str);
 
     canvas_set_font(canvas, FontSecondary);
-    char freq_str[RADIO_SCANNER_BUFFER_SZ + 1] = {0};
-    snprintf(freq_str, RADIO_SCANNER_BUFFER_SZ, "Freq: %.2f MHz", (double)app->frequency / 1000000);
-    canvas_draw_str_aligned(canvas, 64, 18, AlignCenter, AlignTop, freq_str);
+    canvas_draw_str(canvas, 64 + freq_width / 2 + 2, 18, "MHz");
 
-    char rssi_str[RADIO_SCANNER_BUFFER_SZ + 1] = {0};
-    snprintf(rssi_str, RADIO_SCANNER_BUFFER_SZ, "RSSI: %.2f", (double)app->rssi);
-    canvas_draw_str_aligned(canvas, 64, 30, AlignCenter, AlignTop, rssi_str);
+    canvas_draw_frame(canvas, 0, 28, 63, 18);
+    canvas_draw_line(canvas, 1, 29, 61, 29);
+    canvas_set_font(canvas, FontSecondary);
+    char rssi_str[16] = {0};
+    snprintf(rssi_str, sizeof(rssi_str), "RSSI %.1f", (double)app->rssi);
+    canvas_draw_str(canvas, 3, 38, rssi_str);
 
-    char sensitivity_str[RADIO_SCANNER_BUFFER_SZ + 1] = {0};
-    snprintf(sensitivity_str, RADIO_SCANNER_BUFFER_SZ, "Sens: %.2f", (double)app->sensitivity);
-    canvas_draw_str_aligned(canvas, 64, 42, AlignCenter, AlignTop, sensitivity_str);
+    int rssi_bar = (int)((app->rssi + 100.0f) / 100.0f * 50);
+    if(rssi_bar < 0) rssi_bar = 0;
+    if(rssi_bar > 50) rssi_bar = 50;
+    if(rssi_bar > 0) {
+        canvas_draw_box(canvas, 3, 41, rssi_bar, 3);
+    }
 
+    canvas_draw_frame(canvas, 65, 28, 63, 18);
+    canvas_draw_line(canvas, 66, 29, 126, 29);
+    char sens_str[16] = {0};
+    snprintf(sens_str, sizeof(sens_str), "SNS %.0fdBm", (double)app->sensitivity);
+    canvas_draw_str(canvas, 68, 38, sens_str);
+
+    canvas_draw_frame(canvas, 0, 48, 63, 16);
+    canvas_draw_line(canvas, 1, 49, 61, 49);
     const char* mod_names[] = {"OOK270", "OOK650", "2FSK238", "2FSK476"};
-    char status_str[RADIO_SCANNER_BUFFER_SZ + 1] = {0};
-    snprintf(status_str, RADIO_SCANNER_BUFFER_SZ, "%s %s",
-             mod_names[app->modulation], app->scanning ? "Scan" : "Lock");
-    canvas_draw_str_aligned(canvas, 64, 54, AlignCenter, AlignTop, status_str);
+    canvas_draw_str(canvas, 3, 58, "MOD:");
+    canvas_draw_str(canvas, 26, 58, mod_names[app->modulation]);
+
+    canvas_draw_frame(canvas, 65, 48, 63, 16);
+    canvas_draw_line(canvas, 66, 49, 126, 49);
+    if(app->scanning) {
+        canvas_draw_str(canvas, 68, 58, "SCAN");
+        const char* dir = app->scan_direction == ScanDirectionUp ? "\x1E" : "\x1F";
+        canvas_draw_str(canvas, 100, 58, dir);
+    } else {
+        canvas_draw_str(canvas, 68, 58, "LOCKED");
+    }
+
 #ifdef FURI_DEBUG
     FURI_LOG_D(TAG, "Exit radio_scanner_draw_callback");
 #endif
