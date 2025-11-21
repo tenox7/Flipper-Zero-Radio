@@ -1,6 +1,6 @@
 App(
-    appid="radio_scanner_310",
-    name="Radio Scanner 310",
+    appid="radio",
+    name="Radio",
     apptype=FlipperAppType.EXTERNAL,
     entry_point="radio_scanner_app",
     requires=["gui", "subghz", "furi"],
@@ -9,8 +9,8 @@ App(
     fap_category="Sub-GHz",
     fap_version="0.3",
     fap_icon_assets="assets",
-    fap_author="@RocketGod-git",
-    fap_description="Scanner for Flipper starting at 310 MHz",
+    fap_author="@tenox7",
+    fap_description="Radio Scanner for Flipper Zero",
     fap_icon="icons/radio_scanner.png",
-    fap_weburl="https://github.com/RocketGod-Git/Flipper-Zero-Radio-Scanner",
+    fap_weburl="https://github.com/tenox7/Flipper-Zero-Radio-Scanner",
 )
